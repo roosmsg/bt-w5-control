@@ -1,0 +1,326 @@
+import { Button, Palette, ScrollView } from "std-widgets.slint";
+
+export struct Texts {
+    device: string,
+    model: string,
+    serial: string,
+    firmware: string,
+    driver: string,
+    headphones: string,
+    microphone: string,
+    not-found: string,
+    updates: string,
+    check-updates: string,
+    download-firmware: string,
+    download-driver: string,
+    bluetooth: string,
+    paired-devices: string,
+    none-paired: string,
+    connect: string,
+    disconnect: string,
+    connected: string,
+    pair-new: string,
+    stop-search: string,
+    searching: string,
+    pair: string,
+    reset-list: string,
+    creative-warning: string,
+}
+
+export global Tr {
+    in property <Texts> t;
+}
+
+export struct PairedRow {
+    name: string,
+    address: string,
+    connected: bool,
+    codec: string,
+}
+
+export struct FoundRow {
+    name: string,
+    address: string,
+}
+
+component Card inherits Rectangle {
+    in property <string> title;
+    background: Palette.alternate-background;
+    border-radius: 8px;
+    border-width: 1px;
+    border-color: Palette.border;
+    VerticalLayout {
+        padding: 14px;
+        spacing: 8px;
+        Text {
+            text: root.title;
+            font-size: 15px;
+            font-weight: 600;
+            color: Palette.foreground;
+        }
+        @children
+    }
+}
+
+component InfoRow inherits HorizontalLayout {
+    in property <string> label;
+    in property <string> value;
+    spacing: 12px;
+    Text {
+        text: root.label;
+        min-width: 140px;
+        max-width: 140px;
+        color: Palette.foreground.transparentize(0.4);
+        vertical-alignment: center;
+    }
+    Text {
+        text: root.value == "" ? "—" : root.value;
+        horizontal-stretch: 1;
+        color: Palette.foreground;
+        wrap: word-wrap;
+        vertical-alignment: center;
+    }
+}
+
+component DeviceRow inherits HorizontalLayout {
+    in property <string> name;
+    in property <string> address;
+    in property <string> note;
+    spacing: 8px;
+    alignment: stretch;
+    VerticalLayout {
+        horizontal-stretch: 1;
+        alignment: center;
+        Text {
+            text: root.name == "" ? root.address : root.name;
+            color: Palette.foreground;
+            overflow: elide;
+        }
+        Text {
+            text: root.note == "" ? root.address : root.address + " · " + root.note;
+            font-size: 11px;
+            color: Palette.foreground.transparentize(0.45);
+        }
+    }
+    @children
+}
+
+export component AppWindow inherits Window {
+    title: "BT-W5 Control";
+    icon: @image-url("icon.svg");
+    preferred-width: 640px;
+    preferred-height: 550px;
+    min-width: 560px;
+    min-height: 550px;
+    background: Palette.background;
+
+    in property <bool> connected;
+    in property <bool> busy;
+    in property <bool> creative-running;
+    in property <string> model;
+    in property <string> serial;
+    in property <string> firmware;
+    in property <string> driver;
+    in property <string> headphones;
+    in property <string> microphone;
+    in property <string> bt-status;
+    in property <int> max-paired;
+    in property <[PairedRow]> paired;
+    in property <[FoundRow]> found;
+    in property <bool> scanning;
+    in property <bool> device-searching;
+    in property <string> firmware-update;
+    in property <string> driver-update;
+    in property <string> message;
+
+    callback check-updates();
+    callback download-firmware();
+    callback download-driver();
+    callback reset-list();
+    callback connect-device(int);
+    callback disconnect-device(int);
+    callback start-scan();
+    callback stop-scan();
+    callback pair-device(int);
+
+    property <bool> enabled: root.connected && !root.busy;
+
+    scroll := ScrollView {
+        VerticalLayout {
+            width: scroll.visible-width;
+            padding: 16px;
+            spacing: 12px;
+            alignment: start;
+
+            if root.creative-running: Rectangle {
+                background: #c4730033;
+                border-radius: 8px;
+                border-width: 1px;
+                border-color: #c47300;
+                VerticalLayout {
+                    padding: 12px;
+                    Text {
+                        text: Tr.t.creative-warning;
+                        wrap: word-wrap;
+                        color: Palette.foreground;
+                    }
+                }
+            }
+
+            Card {
+                title: Tr.t.device;
+                if !root.connected: Text {
+                    text: Tr.t.not-found;
+                    wrap: word-wrap;
+                    color: Palette.foreground.transparentize(0.3);
+                }
+                InfoRow {
+                    label: Tr.t.model;
+                    value: root.model;
+                }
+                InfoRow {
+                    label: Tr.t.serial;
+                    value: root.serial;
+                }
+                InfoRow {
+                    label: Tr.t.firmware;
+                    value: root.firmware;
+                }
+                InfoRow {
+                    label: Tr.t.driver;
+                    value: root.driver;
+                }
+                InfoRow {
+                    label: Tr.t.headphones;
+                    value: root.headphones;
+                }
+                InfoRow {
+                    label: Tr.t.microphone;
+                    value: root.microphone;
+                }
+            }
+
+            Card {
+                title: Tr.t.updates;
+                InfoRow {
+                    label: Tr.t.firmware;
+                    value: root.firmware-update;
+                }
+                InfoRow {
+                    label: Tr.t.driver;
+                    value: root.driver-update;
+                }
+                HorizontalLayout {
+                    spacing: 8px;
+                    alignment: start;
+                    Button {
+                        text: Tr.t.check-updates;
+                        enabled: !root.busy;
+                        clicked => {
+                            root.check-updates();
+                        }
+                    }
+                    Button {
+                        text: Tr.t.download-firmware;
+                        enabled: !root.busy;
+                        clicked => {
+                            root.download-firmware();
+                        }
+                    }
+                    Button {
+                        text: Tr.t.download-driver;
+                        enabled: !root.busy;
+                        clicked => {
+                            root.download-driver();
+                        }
+                    }
+                }
+            }
+
+            Card {
+                title: Tr.t.bluetooth;
+                if root.bt-status != "": Text {
+                    text: root.bt-status;
+                    color: Palette.foreground;
+                }
+                Text {
+                    text: root.max-paired > 0
+                        ? Tr.t.paired-devices + " (" + root.paired.length + "/" + root.max-paired + ")"
+                        : Tr.t.paired-devices;
+                    font-weight: 600;
+                    color: Palette.foreground;
+                }
+                if root.paired.length == 0: Text {
+                    text: Tr.t.none-paired;
+                    color: Palette.foreground.transparentize(0.45);
+                }
+                for row[i] in root.paired: DeviceRow {
+                    name: row.name;
+                    address: row.address;
+                    note: !row.connected ? "" : row.codec == "" ? Tr.t.connected : Tr.t.connected + " · " + row.codec;
+                    Button {
+                        text: row.connected ? Tr.t.disconnect : Tr.t.connect;
+                        enabled: root.enabled;
+                        clicked => {
+                            if row.connected {
+                                root.disconnect-device(i);
+                            } else {
+                                root.connect-device(i);
+                            }
+                        }
+                    }
+                }
+
+                HorizontalLayout {
+                    spacing: 8px;
+                    alignment: start;
+                    Button {
+                        text: root.scanning ? Tr.t.stop-search : Tr.t.pair-new;
+                        enabled: root.enabled;
+                        clicked => {
+                            if root.scanning {
+                                root.stop-scan();
+                            } else {
+                                root.start-scan();
+                            }
+                        }
+                    }
+                    Button {
+                        text: Tr.t.reset-list;
+                        enabled: root.enabled && !root.scanning;
+                        clicked => {
+                            root.reset-list();
+                        }
+                    }
+                }
+                // Only while the dongle itself reports that it searches for new devices.
+                if root.device-searching: Text {
+                    text: Tr.t.searching;
+                    wrap: word-wrap;
+                    color: Palette.foreground.transparentize(0.3);
+                }
+
+                for row[i] in root.found: DeviceRow {
+                    name: row.name;
+                    address: row.address;
+                    note: "";
+                    Button {
+                        text: Tr.t.pair;
+                        enabled: root.enabled;
+                        clicked => {
+                            root.pair-device(i);
+                        }
+                    }
+                }
+            }
+
+            if root.message != "": Text {
+                // One line only, so a long notification can never reflow the window.
+                overflow: elide;
+                text: root.message;
+                wrap: no-wrap;
+                color: Palette.foreground.transparentize(0.25);
+            }
+        }
+    }
+}

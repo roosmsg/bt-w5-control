@@ -1,0 +1,46 @@
+[package]
+name = "bt-w5-control"
+version = "1.0.0"
+edition = "2024"
+description = "Minimal control app for the Creative BT-W5 Bluetooth audio dongle"
+publish = false
+
+[dependencies]
+crc32fast = "1.5.4"
+hidapi = { version = "2.6.7", default-features = false, features = ["windows-native"] }
+md5 = { package = "md-5", version = "0.11.0" }
+serde = { version = "1.0.229", features = ["derive"] }
+serde_json = "1.0.154"
+slint = "1.18.1"
+ureq = "3.5.1"
+windows = { version = "0.62.2", features = [
+    "Win32_Foundation",
+    "Win32_Globalization",
+    "Win32_Media_Audio",
+    "Win32_Media_KernelStreaming",
+    "Win32_Security_Cryptography",
+    "Win32_Security_WinTrust",
+    "Win32_System_Com",
+    "Win32_System_Com_StructuredStorage",
+    "Win32_System_Diagnostics_ToolHelp",
+    "Win32_System_Registry",
+    "Win32_System_Threading",
+    "Win32_System_Variant",
+    "Win32_UI_Shell",
+    "Win32_UI_Shell_PropertiesSystem",
+    "Win32_UI_WindowsAndMessaging",
+] }
+# Must match the windows-core version that `windows` itself depends on (the
+# #[interface] macro expands to ::windows_core paths).
+windows-core = "0.62.2"
+winreg = "0.56.0"
+
+[build-dependencies]
+slint-build = "1.18.1"
+winresource = "0.1.34"
+
+[profile.release]
+# Thin LTO: about the same runtime speed as full LTO, but a much shorter final link.
+lto = "thin"
+strip = true
+panic = "abort"
