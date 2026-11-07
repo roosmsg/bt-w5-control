@@ -29,7 +29,7 @@ Fixed behaviour, not configurable:
 | Run at startup | `HKCU\...\Run` → `bt-w5-control.exe --startup`, re-registered on every launch |
 | Effects off, EQ off | Windows audio enhancements off (`PKEY_AudioEndpoint_Disable_SysFx = 1`) on both BT-W5 endpoints, which bypasses Creative's APO entirely |
 | Playback: headphones stereo | `PKEY_AudioEndpoint_PhysicalSpeakers = 3` (front L/R) |
-| Headphones 24-bit / 96 kHz | Set through `IPolicyConfig` if the endpoint supports it |
+| Headphones highest quality | Highest exclusive-mode format the endpoint supports (24-bit / 96 kHz on the BT-W5) |
 | Microphone highest quality | Highest exclusive-mode format the endpoint supports (16-bit / 48 kHz on the BT-W5) |
 
 `--startup` applies the audio defaults (waiting up to a minute for the dongle), makes sure auto
